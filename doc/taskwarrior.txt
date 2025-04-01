@@ -1,0 +1,233 @@
+*taskwarrior.txt*  Taskwarrior integration for Neovim
+
+                        TASKWARRIOR.NVIM
+
+Author: Your Name <your.email@example.com>
+License: MIT
+Repository: https://github.com/yourusername/taskwarrior.nvim
+
+
+==============================================================================
+CONTENTS                 leader>tkm or use :TaskPomodoro
+
+Sync and import:
+- Sync markdown with Taskwarrior: Press <leader>tks or use :TaskSync
+- Import tasks from Taskwarrior: Use :TaskImport [filter]
+
+==============================================================================
+6. COMMANDS                                          *taskwarrior-commands*
+
+:TaskDashboard ............... Open the task dashboard
+:TaskBrowse .................. Browse tasks with telescope
+:TaskCreate .................. Create task from markdown checkbox
+:TaskCreateFromComment ....... Create task from TODO comment
+:TaskComplete ................ Mark the current task as done
+:TaskSync .................... Sync markdown document with Taskwarrior
+:TaskCalendar ................ Show task calendar
+:TaskProject ................. Show project summary
+:TaskPomodoro ................ Start a pomodoro timer for a task
+:TaskImport [filter] ......... Import tasks from Taskwarrior
+:TaskSetPriority ............. Set task priority
+:TaskSetDue .................. Set task due date
+
+==============================================================================
+7. MAPPINGS                                          *taskwarrior-mappings*
+
+Default mappings (can be customized):
+
+<leader>tkb .................. Open task dashboard
+<leader>tkt .................. Browse tasks
+<leader>tkk .................. Create task from comment
+<leader>tki .................. Create task from markdown checkbox
+<leader>tkd .................. Mark task as done
+<leader>tkg .................. Go to task in TUI
+<leader>tkp .................. Set task priority
+<leader>tku .................. Set task due date
+<leader>tks .................. Sync task document
+<leader>tkm .................. Start pomodoro for task
+<leader>tkc .................. Show task calendar
+<leader>tkj .................. Show project summary
+
+For markdown files:
+<leader>tc ................... Create a new checkbox
+<leader>tx ................... Toggle checkbox state
+
+==============================================================================
+8. UI COMPONENTS                                          *taskwarrior-ui*
+
+Dashboard:
+- Central hub for viewing tasks
+- Shows pending, urgent, and overdue counts
+- Lists recent tasks
+- Provides quick access to common actions
+
+Calendar:
+- Shows tasks by due date
+- Provides monthly calendar view
+- Lists tasks for each date
+
+Project Summary:
+- Shows progress for each project
+- Lists pending tasks by project
+- Provides completion percentage
+
+==============================================================================
+9. MARKDOWN INTEGRATION                           *taskwarrior-markdown*
+
+Taskwarrior.nvim can synchronize tasks between markdown files and Taskwarrior.
+
+Markdown task format:
+`- [ ] Task description [Priority: H] [Due: 2023-07-15] (ID: 123)`
+
+When a task is created or synced:
+- Checkbox status reflects task status in Taskwarrior
+- Metadata (Priority, Due date, etc.) is kept in sync
+- Task ID links the markdown item to Taskwarrior
+
+Auto-sync can be enabled in configuration.
+
+==============================================================================
+10. TROUBLESHOOTING                             *taskwarrior-troubleshooting*
+
+Common issues:
+
+1. Taskwarrior not found
+   - Make sure Taskwarrior is installed and in your PATH
+   - Run :checkhealth taskwarrior to verify
+
+2. Commands not working
+   - Check if you've modified keymaps in your configuration
+   - Try using the commands directly (:TaskDashboard, etc.)
+
+3. Sync issues
+   - Manual sync: Run :TaskSync
+   - Make sure task IDs in markdown are correct
+
+For more help:
+   - Check the project README
+   - Run :checkhealth taskwarrior
+   - Open an issue on GitHub
+
+==============================================================================
+                            *taskwarrior-contents*
+
+    1. Introduction ................ |taskwarrior-introduction|
+    2. Requirements ................ |taskwarrior-requirements|
+    3. Installation ................ |taskwarrior-installation|
+    4. Configuration ............... |taskwarrior-configuration|
+    5. Usage ....................... |taskwarrior-usage|
+    6. Commands .................... |taskwarrior-commands|
+    7. Mappings .................... |taskwarrior-mappings|
+    8. UI Components ............... |taskwarrior-ui|
+    9. Markdown Integration ........ |taskwarrior-markdown|
+    10. Troubleshooting ............ |taskwarrior-troubleshooting|
+
+==============================================================================
+1. INTRODUCTION                                   *taskwarrior-introduction*
+
+Taskwarrior.nvim is a plugin that integrates TaskWarrior with Neovim,
+providing a seamless workflow for managing tasks directly within your editor.
+
+This plugin enables you to:
+- Create tasks from markdown checkboxes or TODO-style comments
+- View and manage tasks with an interactive dashboard
+- Browse tasks with fuzzy search via Telescope
+- Track time with a Pomodoro timer
+- Sync tasks between markdown documents and Taskwarrior
+- Get an overview of project progress
+- View tasks in a calendar
+
+==============================================================================
+2. REQUIREMENTS                                   *taskwarrior-requirements*
+
+- Neovim >= 0.7.0
+- Taskwarrior (https://taskwarrior.org)
+- plenary.nvim (for async operations)
+- telescope.nvim (optional, for task browsing)
+
+==============================================================================
+3. INSTALLATION                                   *taskwarrior-installation*
+
+Using packer.nvim:
+>lua
+  use {
+    'yourusername/taskwarrior.nvim',
+    requires = {
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim', -- optional
+    },
+    config = function()
+      require('taskwarrior').setup({
+        -- Your configuration options here
+      })
+    end
+  }
+<
+
+Using lazy.nvim:
+>lua
+  {
+    'yourusername/taskwarrior.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim', -- optional
+    },
+    config = function()
+      require('taskwarrior').setup({
+        -- Your configuration options here
+      })
+    end
+  }
+<
+
+==============================================================================
+4. CONFIGURATION                                 *taskwarrior-configuration*
+
+Default configuration:
+>lua
+  require('taskwarrior').setup({
+    tags = { "TODO", "HACK", "NOTE", "PERF", "TEST", "WARN" },
+    keymaps = {
+      dashboard = "<leader>tkb",
+      browse = "<leader>tkt",
+      create_from_comment = "<leader>tkk",
+      create_from_markdown = "<leader>tki",
+      mark_done = "<leader>tkd",
+      goto_task = "<leader>tkg",
+      priority = "<leader>tkp",
+      due_date = "<leader>tku",
+      sync = "<leader>tks",
+      pomodoro = "<leader>tkm",
+      calendar = "<leader>tkc",
+      project = "<leader>tkj"
+    },
+    auto_sync = false,
+    default_priority = "M",
+    default_tags = {},
+    statusline = {
+      enabled = true,
+      format = "Tasks: %count% (%urgent% urgent)"
+    },
+    integrations = {
+      telescope = true,
+      markdown = true
+    }
+  })
+<
+
+==============================================================================
+5. USAGE                                                *taskwarrior-usage*
+
+Creating tasks:
+- From markdown checkbox: Place cursor on a checkbox line (`- [ ] Task`) and
+  press <leader>tki or use :TaskCreate
+- From TODO comment: Place cursor on a line with a TODO marker and press
+  <leader>tkk or use :TaskCreateFromComment
+
+Managing tasks:
+- Open the dashboard: Press <leader>tkb or use :TaskDashboard
+- Browse tasks: Press <leader>tkt or use :TaskBrowse
+- Mark task as done: Press <leader>tkd or use :TaskComplete
+- Set task priority: Press <leader>tkp or use :TaskSetPriority
+- Set due date: Press <leader>tku or use :TaskSetDue
+- Start Pomodoro timer: Press <
