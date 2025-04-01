@@ -104,7 +104,7 @@ Common issues:
    - Make sure task IDs in markdown are correct
 
 For more help:
-   - Check the project README
+   - Check the project README.md
    - Run :checkhealth taskwarrior
    - Open an issue on GitHub
 
