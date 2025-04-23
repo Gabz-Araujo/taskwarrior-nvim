@@ -1,0 +1,250 @@
+{
+  "name": "Taskwarrior.nvim",
+  "version": "1.0.1",
+  "system_prompt": "You are assisting with the development of Taskwarrior.nvim, a Neovim plugin that integrates Taskwarrior with Neovim using markdown files as an intermediary format. The plugin uses a clean architecture with domain, application, infrastructure, and presentation layers.",
+  "vars": {
+    "plugin_root": "/Users/GabrielAraujo/development/personal/nvim-plugins/taskwarrior.nvim"
+  },
+  "groups": [
+    {
+      "name": "Core Domain",
+      "system_prompt": "This group contains the core domain entities and logic of the Taskwarrior.nvim plugin. The Task entity is the central model that represents a task with various properties and methods for manipulating task data. This group also includes validation utilities and domain constants.",
+      "data": [
+        "task_entity",
+        "project_entity",
+        "domain_constants",
+        "validation_utils",
+        "task_repository_interface",
+        "task_service"
+      ]
+    },
+    {
+      "name": "Markdown Integration",
+      "system_prompt": "This group handles the parsing of markdown files to extract task information. It uses a markdown parser to convert markdown checkboxes and metadata into Task objects and vice versa. This is a key part of the plugin's functionality as it allows users to manage tasks directly from markdown files.",
+      "data": ["markdown_parser", "markdown_parser_tests"]
+    },
+    {
+      "name": "Taskwarrior Integration",
+      "system_prompt": "This group handles the integration with the Taskwarrior command-line tool. It includes an adapter that communicates with Taskwarrior and repository implementations that fetch and store tasks.",
+      "data": ["taskwarrior_adapter", "task_repository_implementation"]
+    },
+    {
+      "name": "UI Components",
+      "system_prompt": "This group contains the user interface components of the plugin, including the dashboard, calendar, and other views for interacting with tasks.",
+      "data": ["dashboard", "calendar"]
+    },
+    {
+      "name": "Commands and Configuration",
+      "system_prompt": "This group contains the plugin's command definitions, keymap setup, and configuration logic. It includes the plugin's entry point (init.lua) and command handling.",
+      "data": [
+        "init_lua",
+        "plugin_file",
+        "commands_file",
+        "keymaps_file",
+        "config_file"
+      ]
+    },
+    {
+      "name": "Application Services",
+      "system_prompt": "This group handles the application-level services, such as syncing tasks between markdown and Taskwarrior, and the command handlers that implement business logic.",
+      "data": [
+        "sync_service",
+        "create_task_command",
+        "complete_task_command",
+        "get_tasks_query"
+      ]
+    },
+    {
+      "name": "Infrastructure Utilities",
+      "system_prompt": "This group contains infrastructure utilities for IO operations, such as buffer reading and command execution that support the plugin's functionality.",
+      "data": [
+        "buffer_reader",
+        "command_executor"
+      ]
+    },
+    {
+      "name": "Utility Functions",
+      "system_prompt": "This group contains common utility functions used throughout the plugin, including date handling, error management, logging, and result handling for operations that might fail.",
+      "data": [
+        "validation_utils",
+        "date_utils",
+        "error_utils",
+        "logger",
+        "result"
+      ]
+    },
+    {
+      "name": "Tests",
+      "system_prompt": "This group contains test files for the plugin to ensure that components work correctly.",
+      "data": [
+        "task_spec", 
+        "fixtures_file", 
+        "mock_file",
+        "mock_modules",
+        "minimal_init"
+      ]
+    }
+  ],
+  "data": {
+    "task_entity": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/domain/entities/task.lua",
+      "description": "Core Task entity that represents a task with various properties and behaviors"
+    },
+    "project_entity": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/domain/entities/project.lua",
+      "description": "Project entity that represents a collection of related tasks"
+    },
+    "domain_constants": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/domain/constants.lua",
+      "description": "Constants used throughout the domain layer, such as task statuses and checkbox mappings"
+    },
+    "validation_utils": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/utils/validation.lua",
+      "description": "Utility functions for validating task data"
+    },
+    "task_repository_interface": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/domain/repositories/task_repository.lua",
+      "description": "Interface defining how tasks are stored and retrieved"
+    },
+    "task_service": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/domain/services/task_service.lua",
+      "description": "Domain service for task-related business logic"
+    },
+    "markdown_parser": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/infrastructure/parsers/markdown_parser.lua",
+      "description": "Parser that extracts task information from markdown text"
+    },
+    "markdown_parser_tests": {
+      "type": "file",
+      "path": "${plugin_root}/tests/integration/parsers/markdown_parser_spec.lua",
+      "description": "Tests for the markdown parser"
+    },
+    "taskwarrior_adapter": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/infrastructure/adapters/taskwarrior_adapter.lua",
+      "description": "Adapter that communicates with the Taskwarrior CLI"
+    },
+    "task_repository_implementation": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/infrastructure/repositories/task_repository_implementation.lua",
+      "description": "Implementation of the task repository that uses Taskwarrior"
+    },
+    "dashboard": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/presentation/ui/dashboard.lua",
+      "description": "Dashboard UI for displaying and interacting with tasks"
+    },
+    "calendar": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/presentation/ui/calendar.lua",
+      "description": "Calendar view for visualizing tasks with due dates"
+    },
+    "init_lua": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/init.lua",
+      "description": "Main entry point for the plugin, contains setup function and exports"
+    },
+    "plugin_file": {
+      "type": "file",
+      "path": "${plugin_root}/plugin/taskwarrior.lua",
+      "description": "Plugin loader that sets up commands and autocommands"
+    },
+    "commands_file": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/presentation/commands.lua",
+      "description": "Definitions of user commands for interacting with the plugin"
+    },
+    "keymaps_file": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/presentation/keymaps.lua",
+      "description": "Keyboard mappings for plugin functionality"
+    },
+    "config_file": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/application/config.lua",
+      "description": "Configuration handling for the plugin"
+    },
+    "sync_service": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/application/services/sync_service.lua",
+      "description": "Service for syncing tasks between markdown and Taskwarrior"
+    },
+    "create_task_command": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/application/commands/create_task.lua",
+      "description": "Command handler for creating new tasks"
+    },
+    "complete_task_command": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/application/commands/complete_task.lua",
+      "description": "Command handler for completing tasks"
+    },
+    "get_tasks_query": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/application/queries/get_tasks.lua",
+      "description": "Query handler for retrieving tasks"
+    },
+    "task_spec": {
+      "type": "file",
+      "path": "${plugin_root}/tests/domain/task_spec.lua",
+      "description": "Tests for the Task entity"
+    },
+    "fixtures_file": {
+      "type": "file",
+      "path": "${plugin_root}/tests/helpers/fixtures.lua",
+      "description": "Test fixtures for consistent test data"
+    },
+    "mock_file": {
+      "type": "file",
+      "path": "${plugin_root}/tests/helpers/mock.lua",
+      "description": "Mock utilities for testing"
+    },
+    "buffer_reader": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/infrastructure/io/buffer_reader.lua",
+      "description": "Utility for reading content from Neovim buffers"
+    },
+    "command_executor": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/infrastructure/io/command.lua",
+      "description": "Utility for executing system commands from the plugin"
+    },
+    "date_utils": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/utils/date_utils.lua",
+      "description": "Utility functions for date and time operations"
+    },
+    "error_utils": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/utils/error.lua",
+      "description": "Error handling and management utilities"
+    },
+    "logger": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/utils/logger.lua",
+      "description": "Logging utility for debugging and tracing plugin operations"
+    },
+    "result": {
+      "type": "file",
+      "path": "${plugin_root}/lua/taskwarrior/utils/result.lua",
+      "description": "Result type for handling operation outcomes with success/failure states"
+    },
+    "mock_modules": {
+      "type": "file",
+      "path": "${plugin_root}/tests/helpers/mock_modules.lua",
+      "description": "Utility for mocking Lua modules during testing"
+    },
+    "minimal_init": {
+      "type": "file",
+      "path": "${plugin_root}/tests/minimal_init.lua",
+      "description": "Minimal Neovim initialization for test environment"
+    }
+  }
+}
