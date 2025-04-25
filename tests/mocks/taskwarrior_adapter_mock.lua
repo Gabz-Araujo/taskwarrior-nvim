@@ -3,8 +3,16 @@ local MockTask_Def = require("tests.mocks.task_mock")
 
 local M = {}
 
-M.get_tasks = function()
-	return Result.Ok({ tasks = {}, count = 0 })
+M.get_task = function(id)
+	return Result.Ok({ id = id, description = "Mock Task" })
+end
+
+M.get_tasks = function(filter, options)
+	local tasks = {
+		{ id = 1, description = "Task 1", status = "pending" },
+		{ id = 2, description = "Task 2", status = "completed" },
+	}
+	return Result.Ok({ tasks = tasks, count = #tasks })
 end
 
 M.add_task = function(task_data)
@@ -26,6 +34,10 @@ end
 M.annotate_task = function(id, annotations)
 	local mock_task = MockTask_Def.new({ id = id, annotations = annotations })
 	return Result.Ok({ task = mock_task })
+end
+
+M.new = function()
+	return M
 end
 
 return M

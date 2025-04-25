@@ -24,7 +24,6 @@ local default_config = {
 		config_location = nil, -- Taskwarrior config location (nil = use default)
 	},
 
-	-- Markdown settings
 	markdown = {
 		checkbox_mapping = {
 			["[ ]"] = "pending",
@@ -35,10 +34,12 @@ local default_config = {
 			["[r]"] = "recurring",
 			["[!]"] = "important",
 		},
-		file_pattern = "*.md", -- Files to treat as task files
-		auto_sync = true, -- Auto-sync when saving files
+		file_pattern = "*.md",
+		auto_sync = true,
+		metadata_pattern = "%[([^:]+):%s*([^%]*)%]", -- Custom metadata pattern
+		dependency_indent_check = true, -- Enable/disable dependency extraction
+		max_dependency_depth = 5, --Maximum dependency recursion level
 	},
-
 	-- UI settings
 	ui = {
 		highlight_overdue = true, -- Highlight overdue tasks
@@ -55,9 +56,9 @@ local default_config = {
 
 	-- Logging
 	logging = {
-		level = "warn", -- debug, info, warn, error
+		level = "debug", -- debug, info, warn, error
 		file = nil, -- nil to disable file logging
-		use_console = false, -- Whether to log to console
+		use_console = true, -- Whether to log to console
 	},
 }
 

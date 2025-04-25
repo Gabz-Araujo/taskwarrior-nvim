@@ -1,14 +1,23 @@
-local M = {}
-
 local Result = require("taskwarrior.utils.result")
 local Error = require("taskwarrior.utils.error")
 local Logger = require("taskwarrior.utils.logger")
+
+--- @class TaskwarriorAdapter
+local M = {}
+
+--- Constructor for the TaskwarriorAdapter
+--- @return TaskwarriorAdapter
+function M.new()
+	local self = {}
+	setmetatable(self, { __index = M })
+	return self
+end
 
 --- Execute a Taskwarrior command
 --- @param args string[] Taskwarrior command arguments
 --- @param options table? Additional options
 --- @return Result Result with parsed JSON output or error
-function M.execute_taskwarrior(args, options)
+function M:execute_taskwarrior(args, options)
 	options = options or {}
 	options.json = options.json ~= false -- Default to JSON output
 
@@ -40,7 +49,7 @@ function M.execute_taskwarrior(args, options)
 	end
 
 	-- Execute the command
-	local result = M.execute(cmd, options)
+	local result = self:execute(cmd, options)
 
 	-- Parse JSON if needed
 	if result:is_ok() and options.json then
@@ -76,11 +85,16 @@ end
 --- @param task Task The task to add
 --- @param options table? Additional options
 --- @return Result Result with the added task or error
-function M.add_task(task, options)
+function M:add_task(task, options)
 	options = options or {}
 
-	-- Get command arguments from task
-	local args = task:to_command_args()
+	local args_result = task:to_command_args()
+
+	if not args_result then
+		return Result.Err(args_result.error)
+	end
+
+	local args = args_result
 
 	-- Create the add command
 	local cmd_args = { "add" }
@@ -89,7 +103,7 @@ function M.add_task(task, options)
 	end
 
 	-- Execute the command
-	local result = M.execute_taskwarrior(cmd_args, { json = false })
+	local result = self:execute_taskwarrior(cmd_args, { json = false })
 
 	-- If successful, try to get the task ID from the output
 	if result:is_ok() then
@@ -106,7 +120,7 @@ function M.add_task(task, options)
 		end
 
 		-- Get the full task data
-		local get_result = M.execute_taskwarrior({ id }, { json = true })
+		local get_result = self:execute_taskwarrior({ id }, { json = true })
 		if not get_result:is_ok() then
 			Logger.warn("Could not retrieve task data: " .. vim.inspect(get_result))
 			return Result.Ok({
@@ -127,7 +141,7 @@ function M.add_task(task, options)
 
 		-- Return the full task data
 		return Result.Ok({
-			task = M.normalize_task_data(get_result.value.data[1]),
+			task = self:normalize_task_data(get_result.value.data[1]),
 			id = tonumber(id),
 		})
 	end
@@ -140,7 +154,7 @@ end
 --- @param modifications table Changes to apply
 --- @param options table? Additional options
 --- @return Result Result with the modified task or error
-function M.modify_task(id, modifications, options)
+function M:modify_task(id, modifications, options)
 	options = options or {}
 
 	-- Convert modifications to command arguments
@@ -168,12 +182,12 @@ function M.modify_task(id, modifications, options)
 	end
 
 	-- Execute the command
-	local result = M.execute_taskwarrior(cmd_args, { json = false })
+	local result = self:execute_taskwarrior(cmd_args, { json = false })
 
 	-- If successful, get the updated task
 	if result:is_ok() then
 		-- Get the full task data
-		local get_result = M.execute_taskwarrior({ id }, { json = true })
+		local get_result = self:execute_taskwarrior({ id }, { json = true })
 		if get_result:is_ok() and get_result.value.data and #get_result.value.data > 0 then
 			return Result.Ok({
 				task = get_result.value.data[1],
@@ -195,7 +209,7 @@ end
 --- @param id string|number Task ID or UUID
 --- @param options table? Additional options
 --- @return Result Result with success message or error
-function M.delete_task(id, options)
+function M:delete_task(id, options)
 	options = options or {}
 	options.force = options.force or true -- Default to force delete
 
@@ -206,7 +220,7 @@ function M.delete_task(id, options)
 	end
 
 	-- Execute the command
-	local result = M.execute_taskwarrior(cmd_args, { json = false })
+	local result = self:execute_taskwarrior(cmd_args, { json = false })
 
 	-- If successful, return a success message
 	if result:is_ok() then
@@ -223,7 +237,7 @@ end
 --- @param filter string|table Filter to apply
 --- @param options table? Additional options
 --- @return Result Result with tasks or error
-function M.get_tasks(filter, options)
+function M:get_tasks(filter, options)
 	options = options or {}
 
 	-- Convert filter to a list of arguments
@@ -239,7 +253,7 @@ function M.get_tasks(filter, options)
 	end
 
 	-- Execute the command
-	local result = M.execute_taskwarrior(filter_args, { json = true })
+	local result = self:execute_taskwarrior(filter_args, { json = true })
 
 	-- If successful, return the tasks
 	if result:is_ok() then
@@ -256,7 +270,7 @@ end
 --- @param cmd string[] Command and arguments as a table
 --- @param options table? Additional options
 --- @return Result Result with command output or error
-function M.execute(cmd, options)
+function M:execute(cmd, options)
 	options = options or {}
 
 	-- vim.fn.system accepts an array of command parts directly
@@ -279,7 +293,7 @@ function M.execute(cmd, options)
 end
 
 -- Add this to your DateUtils or in the taskwarrior_adapter file
-function M.convert_taskwarrior_date(date)
+function M:convert_taskwarrior_date(date)
 	if not date then
 		return nil
 	end
@@ -295,7 +309,7 @@ function M.convert_taskwarrior_date(date)
 	return string.format("%s-%s-%sT%s:%s:%sZ", year, month, day, hour, min, sec)
 end
 
-function M.normalize_task_data(task_data)
+function M:normalize_task_data(task_data)
 	if not task_data then
 		return nil
 	end
@@ -306,11 +320,36 @@ function M.normalize_task_data(task_data)
 	local date_fields = { "due", "wait", "scheduled", "until", "entry", "modified", "start", "end" }
 	for _, field in ipairs(date_fields) do
 		if normalized[field] then
-			normalized[field] = M.convert_taskwarrior_date(normalized[field])
+			normalized[field] = self:convert_taskwarrior_date(normalized[field])
 		end
 	end
 
 	return normalized
+end
+
+--- Get a task by ID from Taskwarrior
+--- @param id string|number Task ID or UUID
+--- @param options table? Additional options
+--- @return Result Result with the task or error
+function M:get_task(id, options)
+	options = options or {}
+
+	-- Execute the command
+	local result = self:execute_taskwarrior({ id }, { json = true })
+
+	-- If successful, return the task
+	if result:is_ok() then
+		if not result.value.data or #result.value.data == 0 then
+			return Result.Err(Error.taskwarrior_error("Task not found", "task " .. id, 1, ""))
+		end
+
+		local task_data = result.value.data[1]
+		return Result.Ok({
+			task = self:normalize_task_data(task_data),
+		})
+	end
+
+	return result
 end
 
 return M

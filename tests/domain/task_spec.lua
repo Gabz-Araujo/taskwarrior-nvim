@@ -6,7 +6,7 @@ local mock_modules = require("tests.helpers.mock_modules")
 mock_modules.mock_result()
 mock_modules.mock_error()
 
-local Task = require("taskwarrior.domain.entities.task") -- Helper function to mock the Error module before Task is loaded
+local Task = require("taskwarrior.domain.entities.task")
 local function setup_error_mock()
 	package.loaded["taskwarrior.utils.error"] = {
 		handle_error = function() end,
@@ -35,9 +35,12 @@ describe("Task entity", function()
 	end)
 
 	it("creates a new task with defaults", function()
-		local task, err = Task.new({ description = "Test task" })
+		local result = Task.new({ description = "Test task" })
 
-		assert.is_nil(err)
+		assert.is_false(result:is_err())
+
+		local task = result.value
+
 		assert.equal("Test task", task.description)
 		assert.same({}, task.tags)
 		assert.same({}, task.annotations)
@@ -46,7 +49,11 @@ describe("Task entity", function()
 	end)
 
 	it("creates a task from taskwarrior JSON", function()
-		local task = Task.from_taskwarrior_json(fixtures.task_json)
+		local result = Task.from_taskwarrior_json(fixtures.task_json)
+
+		assert.is_true(result:is_ok())
+
+		local task = result.value
 
 		assert.equal(42, task.id)
 		assert.equal("123e4567-e89b-12d3-a456-426614174000", task.uuid)
@@ -56,15 +63,16 @@ describe("Task entity", function()
 	end)
 
 	it("converts to command arguments", function()
-		local task, err = Task.new({
+		local result = Task.new({
 			description = "Task with arguments",
 			priority = "H",
 			project = "test.project",
 			tags = { "tag1", "tag2" },
 		})
 
-		assert.is_nil(err)
-		local args = task:to_command_args()
+		assert.is_false(result:is_err())
+
+		local args = result.value:to_command_args()
 
 		-- Check for required arguments
 		assert.truthy(vim.tbl_contains(args, 'description:"Task with arguments"'))
@@ -75,7 +83,7 @@ describe("Task entity", function()
 	end)
 
 	it("converts to markdown format", function()
-		local task, err = Task.new({
+		local result = Task.new({
 			description = "Markdown task",
 			priority = "H",
 			due = "2023-12-31",
@@ -84,9 +92,10 @@ describe("Task entity", function()
 			tags = { "tag1", "tag2" },
 		})
 
-		local markdown = task:to_markdown(true)
+		assert.is_false(result:is_err())
 
-		assert.is_nil(err)
+		local markdown = result.value:to_markdown(true)
+
 		assert.matches("^%- %[ %] Markdown task", markdown)
 		assert.matches("%[Priority: H%]", markdown)
 		assert.matches("%[Due: 2023%-12%-31%]", markdown)
@@ -96,19 +105,22 @@ describe("Task entity", function()
 	end)
 
 	it("checks status correctly", function()
-		local task1, err1 = Task.new({ status = "pending" })
-		local task2, err2 = Task.new({ status = "done" })
+		local result1 = Task.new({ description = "Hello", status = "pending" })
+		local result2 = Task.new({ description = "Hello", status = "done" })
 
-		assert.is_nil(err1)
-		assert.is_nil(err2)
-		assert.is_false(task1:is_completed())
-		assert.is_true(task2:is_completed())
+		assert.is_false(result1:is_err())
+		assert.is_false(result2:is_err())
+		assert.is_false(result1.value:is_completed())
+		assert.is_true(result2.value:is_completed())
 	end)
 
 	it("manages tags correctly", function()
-		local task, err = Task.new({ tags = { "initial" } })
+		local result = Task.new({ description = "New task", tags = { "initial" } })
 
-		assert.is_nil(err)
+		assert.is_false(result:is_err())
+
+		local task = result.value
+
 		assert.is_true(task:has_tag("initial"))
 		assert.is_false(task:has_tag("nonexistent"))
 
@@ -125,9 +137,12 @@ describe("Task entity", function()
 	end)
 
 	it("manages UDAs correctly", function()
-		local task, err = Task.new()
+		local result = Task.new({ description = "Task 1" })
 
-		assert.is_nil(err)
+		assert.is_false(result:is_err())
+
+		local task = result.value
+
 		assert.is_nil(task:get_uda("custom"))
 
 		task:set_uda("custom", "value")
@@ -138,23 +153,27 @@ describe("Task entity", function()
 	end)
 
 	it("detects differences between tasks", function()
-		local task1, err1 = Task.new({
+		local result1 = Task.new({
 			description = "Original",
 			priority = "M",
 			tags = { "tag1", "tag2" },
 		})
 
-		assert.is_nil(err1)
+		assert.is_false(result1:is_err())
 
-		local task2, err2 = Task.new({
+		local task1 = result1.value
+
+		local result2 = Task.new({
 			description = "Modified",
 			priority = "H",
 			tags = { "tag2", "tag3" },
 		})
 
-		assert.is_nil(err2)
+		assert.is_false(result2:is_err())
 
-		diff = task1:diff(task2)
+		local task2 = result2.value
+
+		local diff = task1:diff(task2)
 
 		assert.equal("Original", diff.description.old)
 		assert.equal("Modified", diff.description.new)

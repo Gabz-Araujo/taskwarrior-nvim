@@ -1,10 +1,8 @@
--- Mock modules for testing
+---@diagnostic disable: undefined-global
 local M = {}
 
--- Stored original modules
 local original_modules = {}
 
--- Setup mock for Result module
 function M.mock_result()
 	original_modules.result = package.loaded["taskwarrior.utils.result"]
 
@@ -40,13 +38,12 @@ function M.mock_result()
 				unwrap_or = function(_, default)
 					return default
 				end,
-				error = err,
+				value = nil,
 			}
 		end,
 	}
 end
 
--- Setup mock for Error module
 function M.mock_error()
 	original_modules.error = package.loaded["taskwarrior.utils.error"]
 
@@ -82,7 +79,6 @@ function M.mock_error()
 	}
 end
 
--- Reset all mocks
 function M.reset_all()
 	for name, module in pairs(original_modules) do
 		package.loaded["taskwarrior.utils." .. name] = module

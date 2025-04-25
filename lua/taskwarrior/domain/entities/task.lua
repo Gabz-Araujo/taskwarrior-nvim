@@ -1,8 +1,8 @@
---- Taskwarrior task entity
 --- @module taskwarrior.domain.task
 
 local Constants = require("taskwarrior.domain.constants")
 local Validation = require("taskwarrior.utils.validation")
+local Result = require("taskwarrior.utils.result")
 
 --- @alias TaskStatus
 --- | "done" # Task is completed
@@ -56,7 +56,9 @@ Task.checkbox_to_status = Constants.CHECKBOX_TO_STATUS
 --- @return Result Result object with validation result or error
 --- @private
 function Task._validate(task)
-	local Result = require("taskwarrior.utils.result")
+	if not task.description then
+		return Result.Err({ "Task description is empty" })
+	end
 
 	if task.status then
 		local status_result = Validation.validate_status(task.status)
@@ -79,7 +81,6 @@ function Task._validate(task)
 		if task[field] then
 			local date_result = Validation.validate_date(task[field])
 			if date_result:is_err() then
-				-- Add field information to the error
 				return Result.Err(
 					date_result.error.message .. " Field: " .. field,
 					date_result.error.type,
@@ -94,20 +95,42 @@ end
 
 --- Create a new Task instance
 --- @param data table|nil Initial task data
---- @return Task|nil New task object or nil if validation fails
---- @return string|nil Error message if validation fails
+--- @return Result<Task, Error> New task object or error if validation fails
 function Task.new(data)
-	local task = data or {}
+	data = data or {}
+	local self = {
+		id = data.id,
+		uuid = data.uuid,
+		description = data.description,
+		status = data.status or Constants.STATUS.PENDING,
+		priority = data.priority,
+		due = data.due,
+		wait = data.wait,
+		scheduled = data.scheduled,
+		until_ = data.until_,
+		tags = data.tags or {},
+		project = data.project,
+		recur = data.recur,
+		annotations = data.annotations or {},
+		depends = data.depends,
+		urgency = data.urgency,
+		entry = data.entry,
+		modified = data.modified,
+		end_ = data.end_,
+		type = data.type,
+		line = data.line,
+		checked = data.checked,
+		continuation_lines = data.continuation_lines,
+		uda = data.uda or {},
+	}
 
-	-- Initialize collections if nil
-	task.tags = task.tags or {}
-	task.annotations = task.annotations or {}
-	task.uda = task.uda or {}
+	local validation_result = Task._validate(self)
 
-	-- Set default status if not provided
-	task.status = task.status or Constants.STATUS.PENDING
+	if validation_result:is_err() then
+		return Result.Err(validation_result.error)
+	end
 
-	return setmetatable(task, Task_mt)
+	return Result.Ok(setmetatable(self, Task_mt))
 end
 
 --- Set task status
@@ -125,7 +148,6 @@ function Task:set_status(status)
 
 	self.status = status
 
-	-- Update checked flag for consistency
 	self.checked = (status == Constants.STATUS.DONE)
 
 	return true
